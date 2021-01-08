@@ -88,8 +88,9 @@ io.on('connection', (socket) => {
 
     socket.on('disconnect', () => {
         console.log("A user disconnected");
-        delete players[socket.id];
-        socket.broadcast.emit('playerList', players);
+        socket.emit('deletePlayer', socket.id);
+        socket.broadcast.emit('deletePlayer', socket.id);
+        console.log("A user disconnected (2)");
         io.emit('disconnected', socket.id);
     });
 

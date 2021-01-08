@@ -1,7 +1,7 @@
 var gameSettings = {
     gameScore: 0,
     enemyPoint: 10,
-    lives: 3,
+    lives: 10,
     gameOver: false,
     enemySpeed: 30,
     projectileSpeed:  500
@@ -17,7 +17,7 @@ var config = {
             debug: false
         }
     },
-    scene: [Scene1, Scene2]
+    scene: [Scene1, LobbyScene ,Scene2]
 }
 
 var game = new Phaser.Game(config);

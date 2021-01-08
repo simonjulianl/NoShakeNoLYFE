@@ -3,6 +3,7 @@ class Heart extends Phaser.GameObjects.Sprite{
         super(scene, x, y, "star");
         scene.hearts.add(this);
         scene.add.existing(this);
+        this.setScale(2);
     }
 
     update(){
