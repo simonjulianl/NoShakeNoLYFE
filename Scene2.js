@@ -9,7 +9,7 @@ const tileX = 150;
 const tileY = 150;
 
 var currentLane = startingY + tileY;
-
+var count = 0;
 
 class Scene2 extends Phaser.Scene {
     constructor() {
@@ -57,42 +57,42 @@ class Scene2 extends Phaser.Scene {
         this.gameOverText.visible = false;
     
         //AMMO BAR
-        this.healthBar = this.makeBar(100, 5, 0x2ecc71);
+        this.healthBar = this.makeBar(150, 5, 0x2ecc71);
         this.setValue(this.healthBar, 0);
 
         //AMMO FULL
-        this.ammoText = this.add.text(220, 10, "SHOOT!");
+        this.ammoText = this.add.text(300, 10, "SHOOT!");
         this.ammoText.visible = false;
 
         //INITIALIZE ENEMIES
+        /*
         this.ship1 = this.add.sprite(config.width, startingY, "ship");
         this.ship2 = this.add.sprite(config.width, startingY + tileY, "ship2");
         this.ship3 = this.add.sprite(config.width, startingY + tileY * 2, "ship3");
-
-        this.enemies = this.physics.add.group();
-        this.enemies.add(this.ship1);
-        this.enemies.add(this.ship2);
-        this.enemies.add(this.ship3);
+        */
 
         //INITIALIZE PLAYER
         this.dude = this.physics.add.sprite(tileX / 2, currentLane, "dude");
         this.dude.play("thrust");
+        this.dude.setScale(2);
         this.cursorKeys = this.input.keyboard.createCursorKeys();
 
         this.dude.setCollideWorldBounds(true);
 
-        //INITIALIZE PROJECTILES, HEARTS, SHOOTING KEY
+        //INITIALIZE ENEMIES, PROJECTILES, HEARTS, SHOOTING KEY
         this.spacebar = this.input.keyboard.addKey(Phaser.Input.Keyboard.KeyCodes.SPACE);
+        this.enemies = this.add.group();
         this.projectiles = this.add.group();
         this.hearts = this.add.group();
 
         for(var i = 0; i < gameSettings.lives; i++){
             var heart = new Heart(this, config.width - 30 * (3 - i), 15);
         }
-    
+        /*
         this.ship1.play("ship1_anim");
         this.ship2.play("ship2_anim");
         this.ship3.play("ship3_anim");
+        */
     
         /*//CLICK PLANE
         this.ship1.setInteractive();
@@ -107,10 +107,19 @@ class Scene2 extends Phaser.Scene {
     }
   
     update() {
+        count += 1;
+        console.log(count);
+
         if(gameSettings.gameOver){
             this.dude.setVelocityY(0);
             this.gameOverText.visible= true;
             return;
+        }
+
+        if(count % 200 === 0){
+            for(let i = 0; i < count / 1000; i++){
+                setTimeout(() => Phaser.Math.Between(0, 10) > 3 ? this.generateEnemy() : this.generateMonster(), i * 500);
+            }
         }
 
         if(Phaser.Input.Keyboard.JustDown(this.spacebar)){
@@ -128,9 +137,11 @@ class Scene2 extends Phaser.Scene {
             this.ammoText.visible = true;
         }
 
+        /*
         this.moveShip(this.ship1, 1);
         this.moveShip(this.ship2, 2);
         this.moveShip(this.ship3, 3);
+        */
     
         this.background.tilePositionX += 0.5;
 
@@ -140,8 +151,21 @@ class Scene2 extends Phaser.Scene {
             var bomb = this.projectiles.getChildren()[i];
             bomb.update();
         }
+
+        for(var i = 0; i < this.enemies.getChildren().length; i++){
+            var enemies = this.enemies.getChildren()[i];
+            if(enemies.update()){
+                gameSettings.lives -= 1;
+                this.hearts.getChildren()[0].update();
+            }
+            if(gameSettings.lives === 0){
+                gameSettings.gameOver = true;
+                break;
+            }
+        }
     }
   
+    /*
     moveShip(ship, speed) {
         ship.x -= speed;
         if (ship.x < 0) {
@@ -161,11 +185,12 @@ class Scene2 extends Phaser.Scene {
         var randomY = Phaser.Math.Between(0, 2);
         ship.y = startingY + randomY * tileY;
     }
-  
+    
     destroyShip(pointer, gameObject) {
         gameObject.setTexture("explosion");
         gameObject.play("explode");
     }
+    */
 
     movePlayerManager(){
         if(Phaser.Input.Keyboard.JustDown(this.cursorKeys.up) && this.dude.alpha === 1){
@@ -179,16 +204,32 @@ class Scene2 extends Phaser.Scene {
         }
     }
 
+    generateEnemy(){
+        var x = config.width;
+        var randomY = Phaser.Math.Between(0, 2);
+        var y = startingY + randomY * tileY;
+        var enemy = new Enemy(this, x, y);
+    }
+
+    generateMonster(){
+        var x = config.width;
+        var randomY = Phaser.Math.Between(0, 2);
+        var y = startingY + randomY * tileY;
+        var enemy = new Monster(this, x, y);
+    }
+
     shootBomb(){
         var bomb = new Bomb(this);
     }
 
     hurtPlayer(dude, enemy){
-        this.resetShipPos(enemy);
+        //this.resetShipPos(enemy);
 
         if(this.dude.alpha < 1){
             return;
         }
+        
+        enemy.destroy();
 
         this.hearts.getChildren()[0].update();
         gameSettings.lives -= 1;
@@ -236,7 +277,7 @@ class Scene2 extends Phaser.Scene {
         var explosion = new Explosion(this, enemy.x, enemy.y);
 
         projectile.destroy();
-        this.resetShipPos(enemy);
+        enemy.destroy();
         gameSettings.gameScore += gameSettings.enemyPoint;
         this.scoreLabel.text = "SCORE " + gameSettings.gameScore;
     }
