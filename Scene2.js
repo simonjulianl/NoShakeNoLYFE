@@ -1,6 +1,6 @@
 class Scene2 extends Phaser.Scene {
     constructor() {
-      super("playGame");
+        super("playGame");
     }
   
     create() {
@@ -53,46 +53,48 @@ class Scene2 extends Phaser.Scene {
   
     update() {
   
-      this.moveShip(this.ship1, 1);
-      this.moveShip(this.ship2, 2);
-      this.moveShip(this.ship3, 3);
-  
-      this.background.tilePositionY -= 0.5;
+        this.moveShip(this.ship1, 1);
+        this.moveShip(this.ship2, 2);
+        this.moveShip(this.ship3, 3);
+    
+        this.background.tilePositionY -= 0.5;
 
-      this.movePlayerManager();
-        
-      if(Phaser.Input.Keyboard.JustDown(this.spacebar)){
-            this.shootBomb();
-            console.log("Fire!");
-      }
-      for(var i = 0; i < this.projectiles.getChildren().length; i++){
-          var bomb = this.projectiles.getChildren()[i];
-          bomb.update();
-      }
+        this.movePlayerManager();
+            
+        if(Phaser.Input.Keyboard.JustDown(this.spacebar)){
+                if(this.dude.active && this.dude.alpha === 1){
+                    this.shootBomb();
+                    console.log("Fire!");
+                }
+        }
+        for(var i = 0; i < this.projectiles.getChildren().length; i++){
+            var bomb = this.projectiles.getChildren()[i];
+            bomb.update();
+        }
     }
   
     moveShip(ship, speed) {
-      ship.y += speed;
-      if (ship.y > config.height) {
-        this.resetShipPos(ship);
-      }
+        ship.y += speed;
+        if (ship.y > config.height) {
+            this.resetShipPos(ship);
+        }
     }
   
     resetShipPos(ship){
-      ship.y = 0;
-      var randomX = Phaser.Math.Between(0, config.width);
-      ship.x = randomX;
+        ship.y = 0;
+        var randomX = Phaser.Math.Between(0, config.width);
+        ship.x = randomX;
     }
   
     destroyShip(pointer, gameObject) {
-      gameObject.setTexture("explosion");
-      gameObject.play("explode");
+        gameObject.setTexture("explosion");
+        gameObject.play("explode");
     }
 
     movePlayerManager(){
-        if(this.cursorKeys.left.isDown){
+        if(this.cursorKeys.left.isDown && this.dude.alpha === 1){
             this.dude.setVelocityX(-gameSettings.playerSpeed);
-        } else if(this.cursorKeys.right.isDown){
+        } else if(this.cursorKeys.right.isDown && this.dude.alpha === 1){
             this.dude.setVelocityX(gameSettings.playerSpeed);
         } else{
             this.dude.setVelocityX(0);
@@ -103,13 +105,50 @@ class Scene2 extends Phaser.Scene {
         var bomb = new Bomb(this);
     }
 
-    hurtPlayer(player, enemy){
-         this.resetShipPos(enemy);
-         player.x = config.width / 2 - 8;
-         player.y = config.height - 64;
+    hurtPlayer(dude, enemy){
+        this.resetShipPos(enemy);
+
+        if(this.dude.alpha < 1){
+            return;
+        }
+
+        var explosion = new Explosion(this, dude.x, dude.y);
+
+        dude.disableBody(true, true);
+
+        this.time.addEvent({
+            delay: 1000,
+            callback: this.resetPlayer,
+            callbackScope: this,
+            loop: false
+        });
+        this.resetPlayer();
+    }
+
+    resetPlayer(){
+        var x = config.width / 2 - 8;
+        var y = config.height + 64;
+        this.dude.enableBody(true, x, y, true, true);
+
+        this.dude.alpha = 0.5;
+
+        var tween = this.tweens.add({
+            targets: this.dude,
+            y: config.height - 64,
+            ease: 'Power1',
+            duration: 1500,
+            repeat: 0,
+            onComplete: function(){
+                this.dude.alpha = 1;
+            },
+            callbackScope: this
+        })
     }
 
     hitEnemy(projectile, enemy){
+
+        var explosion = new Explosion(this, enemy.x, enemy.y);
+
         projectile.destroy();
         this.resetShipPos(enemy);
         gameSettings.gameScore += gameSettings.enemyPoint;
