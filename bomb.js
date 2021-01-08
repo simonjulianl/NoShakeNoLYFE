@@ -6,7 +6,7 @@ class Bomb extends Phaser.GameObjects.Sprite{
         scene.projectiles.add(this);
         scene.add.existing(this);
         scene.physics.world.enableBody(this);
-        this.body.velocity.y = -250;
+        this.body.velocity.x = 250;
     }
 
     update(){

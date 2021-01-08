@@ -1,3 +1,16 @@
+var lane1;
+var lane2;
+var lane3;
+
+const startingX = 75;
+const startingY = 320;
+
+const tileX = 150;
+const tileY = 150;
+
+var currentLane = startingY + tileY;
+
+
 class Scene2 extends Phaser.Scene {
     constructor() {
         super("playGame");
@@ -7,16 +20,35 @@ class Scene2 extends Phaser.Scene {
         this.background = this.add.tileSprite(0, 0, config.width, config.height, "sky");
         this.background.setOrigin(0, 0);
 
+        //CREATE LANE
+        // setting up stage, tile of 150 x 150 pixels;
+        lane1 = this.physics.add.staticGroup({
+            key : 'tile',
+            repeat : 6,
+            setXY : {x : startingX, y : startingY, stepX : tileX, stepY : 0}
+        });
+
+        lane2 = this.physics.add.staticGroup({
+            key : 'tile',
+            repeat : 6,
+            setXY : {x : startingX, y : startingY + tileY, stepX : tileX, stepY : 0}
+        });
+
+        lane3 = this.physics.add.staticGroup({
+            key : 'tile',
+            repeat : 6,
+            setXY : {x : startingX, y : startingY + tileY * 2, stepX : tileX, stepY : 0}
+        });
         //SCORE LABEL
-        var graphics = this.add.graphics();
-        graphics.fillStyle(0x000000, 1);
-        graphics.moveTo(0, 0);
-        graphics.lineTo(config.width, 0);
-        graphics.lineTo(config.width, 30);
-        graphics.lineTo(0, 30);
-        graphics.lineTo(0, 0);
-        graphics.closePath();
-        graphics.fillPath();
+        this.graphics = this.add.graphics();
+        this.graphics.fillStyle(0x000000, 1);
+        this.graphics.moveTo(0, 0);
+        this.graphics.lineTo(config.width, 0);
+        this.graphics.lineTo(config.width, 30);
+        this.graphics.lineTo(0, 30);
+        this.graphics.lineTo(0, 0);
+        this.graphics.closePath();
+        this.graphics.fillPath();
         this.scoreLabel = this.add.text(20, 10, "SCORE " + gameSettings.gameScore);
 
         //GAMEOVER TEXT
@@ -24,21 +56,32 @@ class Scene2 extends Phaser.Scene {
         this.gameOverText.setOrigin(0.5);
         this.gameOverText.visible = false;
     
-        this.ship1 = this.add.sprite(config.width / 2 - 50, config.height / 2, "ship");
-        this.ship2 = this.add.sprite(config.width / 2, config.height / 2, "ship2");
-        this.ship3 = this.add.sprite(config.width / 2 + 50, config.height / 2, "ship3");
+        //AMMO BAR
+        this.healthBar = this.makeBar(100, 5, 0x2ecc71);
+        this.setValue(this.healthBar, 0);
+
+        //AMMO FULL
+        this.ammoText = this.add.text(220, 10, "SHOOT!");
+        this.ammoText.visible = false;
+
+        //INITIALIZE ENEMIES
+        this.ship1 = this.add.sprite(config.width, startingY, "ship");
+        this.ship2 = this.add.sprite(config.width, startingY + tileY, "ship2");
+        this.ship3 = this.add.sprite(config.width, startingY + tileY * 2, "ship3");
 
         this.enemies = this.physics.add.group();
         this.enemies.add(this.ship1);
         this.enemies.add(this.ship2);
         this.enemies.add(this.ship3);
 
-        this.dude = this.physics.add.sprite(config.width / 2 - 8, config.height - 64, "dude");
+        //INITIALIZE PLAYER
+        this.dude = this.physics.add.sprite(tileX / 2, currentLane, "dude");
         this.dude.play("thrust");
         this.cursorKeys = this.input.keyboard.createCursorKeys();
 
         this.dude.setCollideWorldBounds(true);
 
+        //INITIALIZE PROJECTILES, HEARTS, SHOOTING KEY
         this.spacebar = this.input.keyboard.addKey(Phaser.Input.Keyboard.KeyCodes.SPACE);
         this.projectiles = this.add.group();
         this.hearts = this.add.group();
@@ -51,11 +94,13 @@ class Scene2 extends Phaser.Scene {
         this.ship2.play("ship2_anim");
         this.ship3.play("ship3_anim");
     
+        /*//CLICK PLANE
         this.ship1.setInteractive();
         this.ship2.setInteractive();
         this.ship3.setInteractive();
 
         this.input.on('gameobjectdown', this.destroyShip, this);
+        */
 
         this.physics.add.overlap(this.dude, this.enemies, this.hurtPlayer, null, this);
         this.physics.add.overlap(this.projectiles, this.enemies, this.hitEnemy, null, this);
@@ -63,25 +108,34 @@ class Scene2 extends Phaser.Scene {
   
     update() {
         if(gameSettings.gameOver){
-            this.dude.setVelocityX(0);
+            this.dude.setVelocityY(0);
             this.gameOverText.visible= true;
             return;
+        }
+
+        if(Phaser.Input.Keyboard.JustDown(this.spacebar)){
+            if(this.dude.active && this.dude.alpha === 1  && this.healthBar.scaleX < 1){
+                this.addValue(this.healthBar);
+            } else if(this.dude.active && this.dude.alpha === 1  && this.healthBar.scaleX >= 1){
+                this.shootBomb();
+                console.log("Fire!");
+                this.setValue(this.healthBar, 0);
+                this.ammoText.visible = false;
+            }
+        }
+
+        if(this.healthBar.scaleX >= 1){
+            this.ammoText.visible = true;
         }
 
         this.moveShip(this.ship1, 1);
         this.moveShip(this.ship2, 2);
         this.moveShip(this.ship3, 3);
     
-        this.background.tilePositionY -= 0.5;
+        this.background.tilePositionX += 0.5;
 
         this.movePlayerManager();
             
-        if(Phaser.Input.Keyboard.JustDown(this.spacebar)){
-                if(this.dude.active && this.dude.alpha === 1){
-                    this.shootBomb();
-                    console.log("Fire!");
-                }
-        }
         for(var i = 0; i < this.projectiles.getChildren().length; i++){
             var bomb = this.projectiles.getChildren()[i];
             bomb.update();
@@ -89,16 +143,23 @@ class Scene2 extends Phaser.Scene {
     }
   
     moveShip(ship, speed) {
-        ship.y += speed;
-        if (ship.y > config.height) {
+        ship.x -= speed;
+        if (ship.x < 0) {
             this.resetShipPos(ship);
+            this.hearts.getChildren()[0].update();
+            gameSettings.lives -= 1;
+            console.log(gameSettings.lives);
+                if(gameSettings.lives === 0){
+                gameSettings.gameOver = true;
+                return;
+            }
         }
     }
   
     resetShipPos(ship){
-        ship.y = 0;
-        var randomX = Phaser.Math.Between(0, config.width);
-        ship.x = randomX;
+        ship.x = config.width;
+        var randomY = Phaser.Math.Between(0, 2);
+        ship.y = startingY + randomY * tileY;
     }
   
     destroyShip(pointer, gameObject) {
@@ -107,12 +168,14 @@ class Scene2 extends Phaser.Scene {
     }
 
     movePlayerManager(){
-        if(this.cursorKeys.left.isDown && this.dude.alpha === 1){
-            this.dude.setVelocityX(-gameSettings.playerSpeed);
-        } else if(this.cursorKeys.right.isDown && this.dude.alpha === 1){
-            this.dude.setVelocityX(gameSettings.playerSpeed);
+        if(Phaser.Input.Keyboard.JustDown(this.cursorKeys.up) && this.dude.alpha === 1){
+            currentLane = currentLane === startingY ? currentLane : currentLane - tileY;
+            this.dude.setPosition(tileX / 2, currentLane);
+        } else if(Phaser.Input.Keyboard.JustDown(this.cursorKeys.down) && this.dude.alpha === 1){
+            currentLane = currentLane === startingY + 2 * tileY ? currentLane : currentLane + tileY;
+            this.dude.setPosition(tileX / 2, currentLane);
         } else{
-            this.dude.setVelocityX(0);
+            this.dude.setVelocityY(0);
         }
     }
 
@@ -149,15 +212,15 @@ class Scene2 extends Phaser.Scene {
     }
 
     resetPlayer(){
-        var x = config.width / 2 - 8;
-        var y = config.height + 64;
+        var x = 0;
+        var y = currentLane;
         this.dude.enableBody(true, x, y, true, true);
 
         this.dude.alpha = 0.5;
 
         var tween = this.tweens.add({
             targets: this.dude,
-            y: config.height - 64,
+            x: tileX / 2,
             ease: 'Power1',
             duration: 1500,
             repeat: 0,
@@ -176,5 +239,32 @@ class Scene2 extends Phaser.Scene {
         this.resetShipPos(enemy);
         gameSettings.gameScore += gameSettings.enemyPoint;
         this.scoreLabel.text = "SCORE " + gameSettings.gameScore;
+    }
+
+    makeBar(x, y,color) {
+        //draw the bar
+        let bar = this.add.graphics();
+
+        //color the bar
+        bar.fillStyle(color, 1);
+
+        //fill the bar with a rectangle
+        bar.fillRect(0, 0, 100, 20);
+        
+        //position the bar
+        bar.x = x;
+        bar.y = y;
+
+        //return the bar
+        return bar;
+    }
+
+    setValue(bar,percentage) {
+        //scale the bar
+        bar.scaleX = percentage/100;
+    }
+
+    addValue(bar){
+        bar.scaleX += 0.2; 
     }
 }
