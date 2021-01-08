@@ -18,6 +18,11 @@ class Scene2 extends Phaser.Scene {
         graphics.closePath();
         graphics.fillPath();
         this.scoreLabel = this.add.text(20, 10, "SCORE " + gameSettings.gameScore);
+
+        //GAMEOVER TEXT
+        this.gameOverText = this.add.text(config.width / 2, config.height / 2, "Game Over", {fontSize: '64px', fill: '#000'});
+        this.gameOverText.setOrigin(0.5);
+        this.gameOverText.visible = false;
     
         this.ship1 = this.add.sprite(config.width / 2 - 50, config.height / 2, "ship");
         this.ship2 = this.add.sprite(config.width / 2, config.height / 2, "ship2");
@@ -36,6 +41,11 @@ class Scene2 extends Phaser.Scene {
 
         this.spacebar = this.input.keyboard.addKey(Phaser.Input.Keyboard.KeyCodes.SPACE);
         this.projectiles = this.add.group();
+        this.hearts = this.add.group();
+
+        for(var i = 0; i < gameSettings.lives; i++){
+            var heart = new Heart(this, config.width - 30 * (3 - i), 15);
+        }
     
         this.ship1.play("ship1_anim");
         this.ship2.play("ship2_anim");
@@ -52,7 +62,12 @@ class Scene2 extends Phaser.Scene {
     }
   
     update() {
-  
+        if(gameSettings.gameOver){
+            this.dude.setVelocityX(0);
+            this.gameOverText.visible= true;
+            return;
+        }
+
         this.moveShip(this.ship1, 1);
         this.moveShip(this.ship2, 2);
         this.moveShip(this.ship3, 3);
@@ -109,6 +124,14 @@ class Scene2 extends Phaser.Scene {
         this.resetShipPos(enemy);
 
         if(this.dude.alpha < 1){
+            return;
+        }
+
+        this.hearts.getChildren()[0].update();
+        gameSettings.lives -= 1;
+        console.log(gameSettings.lives);
+        if(gameSettings.lives === 0){
+            gameSettings.gameOver = true;
             return;
         }
 
