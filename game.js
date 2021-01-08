@@ -1,5 +1,7 @@
 var gameSettings = {
-    playerSpeed: 200
+    playerSpeed: 200,
+    gameScore: 0,
+    enemyPoint: 10
 }
 
 var config = {

@@ -6,6 +6,18 @@ class Scene2 extends Phaser.Scene {
     create() {
         this.background = this.add.tileSprite(0, 0, config.width, config.height, "sky");
         this.background.setOrigin(0, 0);
+
+        //SCORE LABEL
+        var graphics = this.add.graphics();
+        graphics.fillStyle(0x000000, 1);
+        graphics.moveTo(0, 0);
+        graphics.lineTo(config.width, 0);
+        graphics.lineTo(config.width, 30);
+        graphics.lineTo(0, 30);
+        graphics.lineTo(0, 0);
+        graphics.closePath();
+        graphics.fillPath();
+        this.scoreLabel = this.add.text(20, 10, "SCORE " + gameSettings.gameScore);
     
         this.ship1 = this.add.sprite(config.width / 2 - 50, config.height / 2, "ship");
         this.ship2 = this.add.sprite(config.width / 2, config.height / 2, "ship2");
@@ -100,5 +112,7 @@ class Scene2 extends Phaser.Scene {
     hitEnemy(projectile, enemy){
         projectile.destroy();
         this.resetShipPos(enemy);
+        gameSettings.gameScore += gameSettings.enemyPoint;
+        this.scoreLabel.text = "SCORE " + gameSettings.gameScore;
     }
 }
