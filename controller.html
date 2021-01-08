@@ -1,0 +1,53 @@
+<!DOCTYPE html>
+<html>
+    <head>
+        <meta charset="utf-8">
+        <meta name='viewport' content='width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=0'>
+        <style>
+            body{
+                touch-action: manipulation;
+            }
+            .centerUp {
+                background-color: white;
+                padding: 25% 0;
+                text-align: center;
+                font-size: 20px;
+            }
+            .centerDown {
+                background-color: white;
+                padding: 0px 0;
+                text-align: center;
+                font-size: 20px;
+            }
+
+            .buttonDesign{
+                background-color: red;
+                border-radius: 20px;
+                border: none;
+                font-size: 20px;
+                
+            }
+        </style>
+
+        <script src="/socket.io/socket.io.js"></script>
+        <script type="text/javascript" src="js/controller.js"></script>
+        <script defer src="/scripts/@fortawesome/fontawesome-free/js/brands.js"></script>
+        <script defer src= "/scripts/@fortawesome/fontawesome-free/js/solid.js"></script>
+        <script defer src="/scripts/@fortawesome/fontawesome-free/js/fontawesome.js"></script>
+    </head>
+    <body>
+        <div>
+            <div class="centerUp">
+                <button class="buttonDesign" onclick="buttonUp()">
+                    <i class="fas fa-arrow-up fa-10x"></i>
+                </button>
+            </div>
+    
+            <div class="centerDown">
+                <button class="buttonDesign" onclick="buttonDown()">
+                    <i class="fas fa-arrow-down fa-10x"></i>
+                </button>
+            </div>
+        </div>
+    </body>
+</html>
