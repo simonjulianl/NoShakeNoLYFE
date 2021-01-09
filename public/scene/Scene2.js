@@ -34,14 +34,17 @@ speechRecognitionList.addFromString(grammar, 10000);
 
 recognition.onspeechend = () => {
     voiceActivate = false;
+    ultiText.visible = false;
 }
 
 recognition.onnomatch = (event) => {
     console.log("not recognized");
+    ultiText.visible = false;
 }
 
 recognition.onerror = (event) => {
     console.log(event.error);
+    ultiText.visible = false;
 }
 
 var voiceActivate = false;
@@ -51,11 +54,14 @@ function activateVoice(){
         recognition.start();
         voiceActivate = true;
         console.log('Ready to receive command');
+        ultiText.visible = true;
     }
 }
 
 var ultimateReady = false;
 var ultiText;  
+
+var ultimateBarIncrease = 0.1;
 
 var boss;
 var bossHealth = 10;
@@ -75,7 +81,7 @@ class chargeBar {
         this.value = 100;
         this.p = 0;
 
-        this.maxBar = 3.0;
+        this.maxBar = 5.0;
 
         this.draw();
         this.scene = scene;
@@ -102,10 +108,10 @@ class chargeBar {
 
         //  BG
         this.bar.fillStyle(0x000000);
-        this.bar.fillRect(this.x, this.y, 76, 12);
+        this.bar.fillRect(this.x, this.y, 5, 7);
         this.bar.setScale(2);
 
-        if (this.p === this.maxBar){
+        if (this.p >= this.maxBar){
             ultiText.visible = true;
             this.bar.fillStyle(0xff0000); //red
             ultimateReady = true;
@@ -223,8 +229,8 @@ class Scene2 extends Phaser.Scene {
         this.gameOverText.visible = false;
 
         //ULTIMATE BAR
-        this.ultimateBar = new chargeBar(this, 30, 25);
-        ultiText = this.add.text(150, 60, "ULTI READY!! SHOUT IT!");
+        this.ultimateBar = new chargeBar(this, 7, 12);
+        ultiText = this.add.text(50, 35, "ULTI READY!! SHOUT IT!");
         ultiText.visible = false;
 
         //INITIALIZE ENEMIES, PROJECTILES, HEARTS, SHOOTING KEY
@@ -328,12 +334,14 @@ class Scene2 extends Phaser.Scene {
         }
 
         // increase level, create a new wave 
-        if(count % 1500 === 0 && !this.bossExist){
+        if(count % 2000 === 0 && !this.bossExist){
             this.bossExist = true;
             this.generateBoss();
-            bossHealth += 10;
+
+            bossHealth += 30;
             enemyChance += 60;
             monsterChance += 60;
+            ultimateBarIncrease /= 1.1;
         }
 
         for(let i = 0; i < this.playerList.length; i++){
@@ -410,9 +418,11 @@ class Scene2 extends Phaser.Scene {
                 if(child !== undefined){
                     const point = this.add.image(child.x, child.y, 'point');
                     gameSettings.gameScore += gameSettings.enemyPoint;
+                    this.scoreLabel.text = "SCORE " + gameSettings.gameScore;
                     this.tweens.add({
                         targets: point,
-                        y: child.y - 130,
+                        x : 100,
+                        y: 30,
                         duration: 1000,
                         ease: "Sine.easeInOut",
                         yoyo: false,
@@ -583,13 +593,14 @@ class Scene2 extends Phaser.Scene {
 
         projectile.destroy();
         
-        this.ultimateBar.increase(0.05);
+        this.ultimateBar.increase(ultimateBarIncrease);
         gameSettings.gameScore += gameSettings.enemyPoint;
         this.scoreLabel.text = "SCORE " + gameSettings.gameScore;
 
         this.tweens.add({
             targets: point,
-            y: enemy.y - 130,
+            x : 100,
+            y: 30,
             duration: 1000,
             ease: "Sine.easeInOut",
             yoyo: false,
