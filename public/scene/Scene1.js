@@ -4,11 +4,10 @@ class Scene1 extends Phaser.Scene {
     }
 
     preload() {
-
         //background
         this.load.image("logo", "assets/images/NSNL_Logo2.png");
-
         this.load.image("sky", "assets/images/background.jpg");
+        
         this.load.image("star", "assets/images/heart.png");
         this.load.image("tile", "assets/images/tile.png");
         this.load.image("laser", "assets/images/laser.png");
@@ -96,11 +95,7 @@ class Scene1 extends Phaser.Scene {
 
         this.load.audio('waiting', [
             "assets/bgm/waiting.mp3"
-        ]);
-
-        
-        
-    
+        ]);    
     }
 
     create() {

@@ -3,6 +3,9 @@ class LobbyScene extends Phaser.Scene {
       super("LobbyScene");
     }
 
+    preload(){
+        
+    }
     playerUpdate(){
         this.playerList.forEach( (player, i) => {
             //get position and width for that specific number of players
