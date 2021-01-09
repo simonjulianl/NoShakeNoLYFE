@@ -96,4 +96,4 @@ io.on('connection', (socket) => {
 
     socket.on("window", (window) => console.log(window));
 });
-server.listen(8081, () => console.log(`Listening on ${server.address().port}`));
+server.listen(process.env.PORT || 8081, () => console.log(`Listening on ${server.address().port}`));

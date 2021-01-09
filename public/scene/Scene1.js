@@ -4,8 +4,10 @@ class Scene1 extends Phaser.Scene {
     }
 
     preload() {
+        //background
+        this.load.image("logo", "assets/images/NSNL_Logo2.png");
+
         this.load.image("sky", "assets/images/background.jpg");
-        // this.load.image("bomb", "assets/images/ammo.png");
         this.load.image("star", "assets/images/heart.png");
         this.load.image("tile", "assets/images/tile.png");
         this.load.image("laser", "assets/images/laser.png");
@@ -84,13 +86,45 @@ class Scene1 extends Phaser.Scene {
         this.load.audio('enemyHit', [
             "assets/bgm/enemyHit.mp3"
         ]);
+
+        this.load.audio('entrance', [
+            "assets/bgm/entrance.mp3"
+        ]);
+
+        this.load.audio('waiting', [
+            "assets/bgm/waiting.mp3"
+        ]);
     
     }
 
     create() {
+        this.background = this.add.tileSprite(0, 0, config.width, config.height, "sky");
+        this.background.setOrigin(0, 0);
+        const logo = this.add.image(510, 250, 'logo');
+        this.tweens.add({
+            targets: logo,
+            y: 330,
+            duration: 4000,
+            ease: "Power1",
+            yoyo: true,
+            loop: -1
+        });
         
-        this.add.text(20, 20, "Loading game...");
-        this.scene.start("LobbyScene");
+        this.sound.pauseOnBlur = false;
+        this.bgMusic = this.sound.add('entrance', { volume: 1.0, loop: true });
+        this.bgMusic.play();
+
+        const startButton = this.add.text(482, 450, 'Start!', { fill: '#0f0' }).setScale(1.5);
+        startButton.setInteractive()
+        .on('pointerover', () => startButton.setStyle({ fill: '#ff0'}))
+        .on('pointerout', () => startButton.setStyle({ fill: '#0f0'}))
+        .on('pointerdown', () => {
+            this.bgMusic.stop();
+            this.scene.start("LobbyScene")
+        });
+
+        
+        //this.scene.start("LobbyScene");
 
         this.anims.create({
             key : "fireAttack",
@@ -199,5 +233,13 @@ class Scene1 extends Phaser.Scene {
             repeat: 0,
             hideOnComplete: true
         });
+    }
+
+    update(){
+        // To make single click suffices to play
+        if (game.sound.context.state === 'suspended') {
+            game.sound.context.resume();
+        }
+        this.background.tilePositionX += 0.5;
     }
 }
