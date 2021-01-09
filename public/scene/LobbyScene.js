@@ -27,6 +27,13 @@ class LobbyScene extends Phaser.Scene {
         });
     }
     create() {
+        // var vid = this.add.video(config.width, config.height, 'wormhole');
+
+        this.background = this.add.tileSprite(0, 0, config.width, config.height, "sky");
+        this.background.setOrigin(0, 0);
+        this.bgMusic = this.sound.add('waiting', { volume: 1.5, loop: true });
+        this.bgMusic.play();
+        
         this.characterList = ["green", "red", "pink"];
         this.bgList = ["green_bg", "red_bg", "pink_bg"];
 
@@ -94,7 +101,10 @@ class LobbyScene extends Phaser.Scene {
                 }) 
             })
 
+            this.bgMusic.stop();
             this.socket.disconnect();
+
+
             this.scene.start('playGame', playerIdList);
         }
     }
@@ -110,5 +120,13 @@ class LobbyScene extends Phaser.Scene {
             }
         }
         return true;
+    }
+
+    update(){
+        if (game.sound.context.state === 'suspended') {
+            game.sound.context.resume();
+        }
+
+        this.background.tilePositionX += 0.5;
     }
   }

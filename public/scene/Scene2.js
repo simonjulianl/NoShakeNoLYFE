@@ -60,7 +60,7 @@ var ultiText;
 var boss;
 var bossHealth = 10;
 
-var monsterChance = 0; // /100 percent, this is the noober one
+var monsterChance = 90; // /100 percent, this is the noober one
 var enemyChance = 90; // 
 
 var bgMusicPlaying  = true;
@@ -75,7 +75,7 @@ class chargeBar {
         this.value = 100;
         this.p = 0;
 
-        this.maxBar = 0.15;
+        this.maxBar = 3.0;
 
         this.draw();
         this.scene = scene;
@@ -223,7 +223,7 @@ class Scene2 extends Phaser.Scene {
         this.gameOverText.visible = false;
 
         //ULTIMATE BAR
-        this.ultimateBar = new chargeBar(this, 70, 25);
+        this.ultimateBar = new chargeBar(this, 30, 25);
         ultiText = this.add.text(150, 60, "ULTI READY!! SHOUT IT!");
         ultiText.visible = false;
 
@@ -408,8 +408,22 @@ class Scene2 extends Phaser.Scene {
             // need to repeat because otherwise some of the monsters are not deleted
             this.enemies.children.iterate(child => { 
                 if(child !== undefined){
-                    child.destroy();
+                    const point = this.add.image(child.x, child.y, 'point');
                     gameSettings.gameScore += gameSettings.enemyPoint;
+                    this.tweens.add({
+                        targets: point,
+                        y: child.y - 130,
+                        duration: 1000,
+                        ease: "Sine.easeInOut",
+                        yoyo: false,
+                        repeat : 0,
+                        callbackScope : this,
+                        onComplete : () => {
+                            point.alpha = 0;
+                            point.destroy();
+                        }
+                    });
+                    child.destroy();
                 }
             })
         }
@@ -565,12 +579,30 @@ class Scene2 extends Phaser.Scene {
     hitEnemy(projectile, enemy){
 
         var explosion = new Explosion(this, enemy.x, enemy.y);
+        const point = this.add.image(enemy.x, enemy.y, 'point');
 
         projectile.destroy();
-        enemy.destroy();
+        
         this.ultimateBar.increase(0.05);
         gameSettings.gameScore += gameSettings.enemyPoint;
         this.scoreLabel.text = "SCORE " + gameSettings.gameScore;
+
+        this.tweens.add({
+            targets: point,
+            y: enemy.y - 130,
+            duration: 1000,
+            ease: "Sine.easeInOut",
+            yoyo: false,
+            repeat : 0,
+            callbackScope : this,
+            onComplete : () => {
+                point.alpha = 0;
+                point.destroy();
+            }
+        });
+
+        enemy.destroy();
+
     }
 
     makeBar(x, y,color) {

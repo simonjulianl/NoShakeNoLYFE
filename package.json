@@ -1,7 +1,7 @@
 {
   "name": "defentilz",
   "version": "1.0.0",
-  "description": "",
+  "description": "[Node.js](https://nodejs.org) is required to install dependencies and run scripts via `npm`.",
   "main": "server.js",
   "scripts": {
     "start": "node server.js",
@@ -15,5 +15,14 @@
     "live-server": "^1.2.1",
     "morgan": "^1.10.0",
     "socket.io": "^3.0.4"
-  }
+  },
+  "devDependencies": {},
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/Amadeus-Winarto/DeFentilz.git"
+  },
+  "bugs": {
+    "url": "https://github.com/Amadeus-Winarto/DeFentilz/issues"
+  },
+  "homepage": "https://github.com/Amadeus-Winarto/DeFentilz#readme"
 }
